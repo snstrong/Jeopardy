@@ -20,9 +20,8 @@
 
 NUM_CATEGORIES = 6;
 NUM_QUESTIONS_PER_CAT = 5;
-let categories = [];
+let bigCategoriesList = [], categories = [];
 
-// TODO - get RANDOM categories
 //
 /** Get NUM_CATEGORIES random categories from API.
  *
@@ -30,12 +29,13 @@ let categories = [];
  */
 
 async function getCategoryIds() {
-    let res = await axios.get(`http://jservice.io/api/categories?count=${NUM_CATEGORIES}`);
-    // console.log(res);
-    for (let cat of res.data) {
-        categories.push(cat.id)
+    while (bigCategoriesList.length < 500) {
+        let res = await axios.get(`http://jservice.io/api/categories?count=100`);
+        for (let cat of res.data) {
+            bigCategoriesList.push(cat.id)
+        }
     }
-    // console.log(categories);
+    categories = _.sampleSize(bigCategoriesList, 6);
     return categories;
 }
 
@@ -84,9 +84,6 @@ async function fillTableHead(tableData) {
 }
 
 async function fillTableBody(tableData) {
-    // row by row
-    // 6 across, 5 down
-    // inner loop: categories, outer loop: rows
     for (let x = 0; x < NUM_QUESTIONS_PER_CAT; x++) {
         let $tr = $(`<tr id="row${x}"></tr>`)
         for (let y = 0; y < NUM_CATEGORIES; y++) {
@@ -97,7 +94,7 @@ async function fillTableBody(tableData) {
 }
 
 async function fillTable() {
-    $('h1').after('<table> <thead> <tr id="tableHead"> </tr> </thead> </table>');
+    $('#startRestart').after('<table> <thead> <tr id="tableHead"> </tr> </thead> </table>');
     let tableData = await getTableData();
     await fillTableHead(tableData);
     await fillTableBody(tableData);
@@ -110,31 +107,34 @@ async function fillTable() {
  * - if currently "question", show answer & set .showing to "answer"
  * - if currently "answer", ignore click
  * */
-
 async function handleClick(evt) {
     $e = $(evt.target);
     if ($e.attr("data-showing") === "null") {
+        $e.addClass("question");
         $e.html(decodeURI($e.attr("data-question")));
         $e.attr("data-showing", "question");
     } else if ($e.attr("data-showing") === "question")  {
+        $e.removeClass("question").addClass("answer");
         $e.html(decodeURI($e.attr("data-answer")));
         $e.attr("data-showing", "answer");
     }
 }
 
-// TODO
+
 /** Wipe the current Jeopardy board, show the loading spinner,
  * and update the button used to fetch data.
  */
 
 function showLoadingView() {
-
+    $('#startRestart').text("Loading...");
+    $('#startRestart').after('<img src="/assets/img/Spinner-1s-374px.gif">');
 }
 
-// TODO
 /** Remove the loading spinner and update the button used to fetch data. */
-
 function hideLoadingView() {
+    $('img').remove();
+    $('#startRestart').text("Restart Game");
+
 }
 
 /** Start game:
@@ -145,23 +145,35 @@ function hideLoadingView() {
  * */
 
 async function setupAndStart() {
+    categories = [];
+    $('table').remove();
+    $('#tableHead').remove();
     await fillTable();
+    hideLoadingView();
 }
 
-// TODO
-/** On click of start / restart button, set up game. */
 
+/** On click of start / restart button, set up game. */
+$('h1').after("<button id='startRestart'>Start Game</button>");
+
+$(document).ready(function() {
+    $('#startRestart').on("click", function(evt) {
+        showLoadingView();
+        setupAndStart();
+        $("table").on("click", "td", function(evt) {
+            console.log(evt);
+            handleClick(evt);
+        });
+    })
+})
 
 /** On page load, add event handler for clicking clues */
-setupAndStart();
-$( document ).ready(function() {
-    $("table").on("click", "td", function(evt) {
-        // evt.target.innerText = "U CLICKED ME?!"
-        // console.log(evt.target.dataset.question);
-        // $e = $(evt.target);
-        // console.log($e);
-        // console.log($e.attr("data-question"));
-        // $e.text($e.attr("data-question"));
-        handleClick(evt);
-    });
-})
+// setupAndStart();
+
+// $( document ).ready(function() {
+//     console.log("it's loaded");
+//     $("table").on("click", "td", function(evt) {
+//         console.log(evt);
+//         handleClick(evt);
+//     });
+// })
