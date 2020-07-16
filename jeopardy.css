@@ -5,3 +5,33 @@
   #8d2ab5
   #74119c
 */
+
+body {
+  background-color: #060ce9;
+  color: #F0F0F0;
+}
+
+h1 {
+  color: #F1C40F;
+  font-family: Copse;
+  text-align: center;
+}
+
+table {
+  width: 100%
+}
+
+th, td {
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  border: 2px solid #115ff4;
+  border-collapse: collapse;
+  width: 15%;
+  color: whitesmoke;
+}
+
+td {
+  height: 6em;
+  text-align: center;
+  align-content: center;
+  justify-content: center;
+}
